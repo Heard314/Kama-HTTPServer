@@ -20,9 +20,7 @@ enum class SSLError
     WANT_READ,
     WANT_WRITE,
     SYSCALL,
-    SSL_ERR,
     ERR,
-    IO_ERR
 };
 
 // SSL 状态

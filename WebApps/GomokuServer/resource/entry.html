@@ -223,7 +223,8 @@
                         sessionStorage.setItem('userId', data.userId);
                         showAlert('登录成功！');
                         // 使用重定向而不是fetch
-                        window.location.href = '/menu';
+                        // FIXME: 导致同一浏览器不同账号会有相同的sessionID
+                        window.location.href = '/menu'; //重定向请求中，浏览器会带着这个新设置的 Cookie 发送给服务器。
                     } else {
                         throw new Error('无效的响应数据');
                     }

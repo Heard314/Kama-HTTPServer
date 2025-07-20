@@ -53,23 +53,13 @@ SslConnection::SslConnection(const TcpConnectionPtr& conn, SslContext* ctx)
         return;
     }
 
-    SSL_set_bio(ssl_, readBio_, writeBio_);
     SSL_set_accept_state(ssl_);  // 设置为服务器模式
+    SSL_set_bio(ssl_, readBio_, writeBio_);
 
-//    // 将 SslConnection 对象设置为 BIO 的 data
-//    BIO_set_data(readBio_, this);
-//    BIO_set_data(writeBio_, this);
 
     // 设置 SSL 选项，以下两个东西会导致SSL_do_handshake发生段错误
 //    SSL_set_mode(ssl_, SSL_MODE_ACCEPT_MOVING_WRITE_BUFFER);
 //    SSL_set_mode(ssl_, SSL_MODE_ENABLE_PARTIAL_WRITE);
-    
-//    ssl::SslConnection 应该通过其自身的 handleRead 和 handleWrite 方法与底层的 TcpConnection 进行交互，而不是通过回调函数
-//    conn_->setMessageCallback(
-//        std::bind(&SslConnection::onRead, this, std::placeholders::_1,
-//                 std::placeholders::_2, std::placeholders::_3));
-//    conn_->setWriteCallback(
-//            std::bind(&SslConnection::onWrite, this));
 }
 
 SslConnection::~SslConnection() 
@@ -100,49 +90,34 @@ void SslConnection::handleHandshake()
     int err = SSL_get_error(ssl_, ret);
     switch (err) {
         case SSL_ERROR_WANT_READ:
+            break;
         case SSL_ERROR_WANT_WRITE:
             int len;
             do
             {
-                len = BIO_read(readBio_, buf, sizeof(buf));
+                len = BIO_read(writeBio_, buf, sizeof(buf));
                 if(len > 0)
                 {
-                    // TODO 发出握手信息
+                    if (!SSL_is_init_finished(ssl_))
+                    {
+                        conn_->send(buf,len);
+                    }
+                    else
+                    {
+                        LOG_ERROR<<"Error: Received data in handshake phase after handshake is finished"<<"\n";
+                    }
                 }
                 else if (!BIO_should_retry(writeBio_))
                 {
                     state_ = SSLState::ERROR;
                     break;
                 }
-            } while(len > 0)
-
-//            // 需要读取数据，注册读事件
-//            if (messageCallback_) {
-//                // 握手完成后，如果缓冲区有待处理的数据，可以尝试读取
-//                if (readBuffer_.readableBytes() > 0) {
-//                    BufferPtr buffer(new muduo::net::Buffer);
-//                    buffer->append(readBuffer_.peek(), readBuffer_.readableBytes());
-//                    onRead(conn_, buffer, muduo::Timestamp::now());
-//                    readBuffer_.retrieveAll(); // 清空 readBuffer_，因为数据已经传递给 onRead
-//                }
-//            } else {
-//                LOG_WARN << "No message callback set after SSL handshake for " << conn_->peerAddress().toIpPort();
-//            }
-//            flushWriteBio(); // 确保发送完握手数据
-//            if(!conn_->isReading())
-//            {
-//                conn_->startRead();
-//            }
-//            break;
-//
-//            LOG_DEBUG << "SSL_ERROR_WANT_WRITE during handshake for " << conn_->peerAddress().toIpPort();
-//            handshakeWantWrite_ = true;
-//            // 依赖 flushWriteBio 在后续发送数据时处理
-//            break;
+            } while(len > 0);
+                break;
 
         default: {
             // 获取详细的错误信息
-            char errBuf[256];
+            char errBuf[2560];
             unsigned long errCode = ERR_get_error();
             ERR_error_string_n(errCode, errBuf, sizeof(errBuf));
             LOG_ERROR << "SSL handshake failed: " << errBuf;
@@ -159,11 +134,25 @@ int SslConnection::transferToBioAndRead(muduo::net::Buffer* buffer)
     int n;
 
     while (buffer->readableBytes() > 0) {
+
+        // 准备
+        if (!SSL_is_init_finished(ssl_)) {
+            handleHandshake();
+            if (state_ == SSLState::ERROR)
+                return -1;
+//            if (!SSL_is_init_finished(ssl_))
+//                return 0;
+        }
+
         size_t len_to_write = buffer->readableBytes();
         const char* src = buffer->peek(); // 获取可读数据的起始地址
 
         n = BIO_write(readBio_, src, len_to_write);
 
+        if (BIO_flush(readBio_) != 1)
+        {
+            LOG_ERROR << "Error flushing source BIO\n";
+        }
         if (n <= 0) {
             // 处理 BIO_write 错误
             return -1; /* assume bio write failure is unrecoverable */
@@ -171,31 +160,15 @@ int SslConnection::transferToBioAndRead(muduo::net::Buffer* buffer)
 
         buffer->retrieve(n); // 移动读指针，标记已写入 BIO 的数据
 
-        // 准备 SSL_read 读取数据，握一下手
-        if (!SSL_is_init_finished(ssl_)) {
-            handleHandshake();
-            if (state_ == SSLState::ERROR)
-                return -1;
-            if (!SSL_is_init_finished(ssl_))
-                return 0;
-        }
-
         /* The encrypted data is now in the input bio so now we can perform actual
          * read of unencrypted data. */
         // 从 ssl 中读出来解密后的客户端输入数据，并进行输出
+
         do {
             n = SSL_read(ssl_, buf, sizeof(buf));
             if (n > 0)
             {
-                if(decryptedBuffer_)
-                {
-                    writeDecryptedBuffer(buf,n);
-                }
-                else
-                {
-                    LOG_ERROR << "decryptedBuffer_ do not exist!" <<"\n";
-                    return -1;
-                }
+                writeDecryptedBuffer(buf,n);
             }
         } while (n > 0);
 
@@ -204,19 +177,20 @@ int SslConnection::transferToBioAndRead(muduo::net::Buffer* buffer)
         /* Did SSL request to write bytes? This can happen if peer has requested SSL
          * renegotiation. */
         //! 在处理完接收到的数据后，本地的 OpenSSL 引擎可能需要发送一些控制消息或握手消息给对端。
-        if (status == WANT_WRITE || status == WANT_READ)
+        if (status == SSLError::WANT_WRITE || status == SSLError::WANT_READ)
+        {
             do {
                 n = BIO_read(writeBio_, buf, sizeof(buf));
                 if (n > 0)
-                    //TODO 握手消息怎么发
-                    queueEncryptedBytes(buf, n);
+                    conn_->send(buf,n);
                 else if (!BIO_should_retry(writeBio_)) {
                     // 处理 BIO_read 错误
                     return -1;
                 }
             } while (n > 0);
+        }
 
-        if (status == SSLSTATUS_FAIL)
+        if (status == SSLError::ERR)
             return -1;
     }
 
@@ -233,6 +207,7 @@ int SslConnection::encryptAndBufferWrite(muduo::net::Buffer& buffer)
     enum SSLError status;
     int n;
 
+
     if (!SSL_is_init_finished(ssl_))
         return 0;
 
@@ -242,7 +217,7 @@ int SslConnection::encryptAndBufferWrite(muduo::net::Buffer& buffer)
         const char* data_to_encrypt = buffer.peek();
 
         n = SSL_write(ssl_, data_to_encrypt, len_to_encrypt);
-        status = get_sslstatus(n);
+        status = getLastError(n);
 
         if (n > 0) {
             // 消费掉已经加密的数据
@@ -253,117 +228,19 @@ int SslConnection::encryptAndBufferWrite(muduo::net::Buffer& buffer)
                 n = BIO_read(writeBio_, buf, sizeof(buf));
                 if (n > 0)
                     // 放到写缓存中，准备发送出去
-                    // TODO 写出消息 目前的实现是放到写缓存中，然后定时检查写缓存中内容并发送
+                    writeReadySendBuffer(buf,n);
                 else if (!BIO_should_retry(writeBio_))
                     return -1;
             } while (n > 0);
         }
 
-        if (status == ERROR)
+        if (status == SSLError::ERR)
             return -1;
 
         if (n == 0)
             break;
     }
     return 0;
-}
-
-void SslConnection::startHandshake() 
-{
-    SSL_set_accept_state(ssl_);
-    handleHandshake();
-}
-
-void SslConnection::send(const void* data, size_t len) 
-{
-    if (state_ != SSLState::ESTABLISHED) {
-        LOG_ERROR << "Cannot send data before SSL handshake is complete";
-        return;
-    }
-    
-    int written = SSL_write(ssl_, data, len);
-    if (written <= 0) {
-        int err = SSL_get_error(ssl_, written);
-        LOG_ERROR << "SSL_write failed: " << ERR_error_string(err, nullptr);
-        return;
-    }
-
-    flushWriteBio();
-}
-
-void SslConnection::onRead(const TcpConnectionPtr& conn, BufferPtr buf, 
-                         muduo::Timestamp time) 
-{
-    LOG_DEBUG<<"onRead has been invoked.\n";
-    if (state_ == SSLState::HANDSHAKE) {
-        // 将 muduo buffer 中的数据追加到 SslConnection 的 readBuffer_
-        BIO_write(readBio_, buf->peek(), buf->readableBytes());
-        // 移动 muduo buffer 的读指针，表明数据已被 SslConnection 接收
-        buf->retrieve(buf->readableBytes());
-        handleHandshake();
-        return;
-    }
-    else if (state_ == SSLState::ESTABLISHED)
-    {
-        // 将 muduo buffer 中的数据追加到 SslConnection 的 readBuffer_
-        readBuffer_.append(buf->peek(), buf->readableBytes());
-        buf->retrieveAll();
-
-        // 解密数据
-        char decryptedData[4096];
-        int ret = SSL_read(ssl_, decryptedData, sizeof(decryptedData));
-        if (ret > 0) {
-            // 创建新的 Buffer 存储解密后的数据
-            muduo::net::Buffer decryptedBuffer;
-            decryptedBuffer.append(decryptedData, ret);
-            
-            // 调用上层回调处理解密后的数据
-            if (messageCallback_) {
-                messageCallback_(conn, &decryptedBuffer, time);
-            }
-        }
-        else if(ret < 0)
-        {
-            int err = SSL_get_error(ssl_, ret);
-            if (err != SSL_ERROR_WANT_READ) {
-                LOG_ERROR << "SSL_read error after handshake: " << ERR_error_string(err, nullptr);
-                handleError(getLastError(ret));
-            }
-        }
-        else
-        {
-            // SSL_read 返回 0 表示连接已关闭
-            LOG_INFO << "SSL connection closed by peer";
-            conn_->shutdown();
-            state_ = SSLState::SHUTDOWN;
-        }
-    }
-}
-
-
-
-//void SslConnection::handleWrite()
-//{
-//    if (state_ == SSLState::HANDSHAKE && handshakeWantWrite_) {
-//        handshakeWantWrite_ = false;
-//        handleHandshake();
-//    } else if (state_ == SSLState::ESTABLISHED) {
-//        flushWriteBio();
-//        // 处理应用层写操作在 send 函数中完成
-//    }
-//}
-
-void SslConnection::flushWriteBio()
-{
-    char buf[4096];
-    int pending;
-    while ((pending = BIO_pending(writeBio_)) > 0) {
-        int bytes = BIO_read(writeBio_, buf,
-                             std::min(pending, static_cast<int>(sizeof(buf))));
-        if (bytes > 0) {
-            conn_->send(buf, bytes);
-        }
-    }
 }
 
 SSLError SslConnection::getLastError(int ret) 
@@ -379,8 +256,6 @@ SSLError SslConnection::getLastError(int ret)
             return SSLError::WANT_WRITE;
         case SSL_ERROR_SYSCALL:
             return SSLError::SYSCALL;
-        case SSL_ERROR_SSL:
-            return SSLError::SSL_ERR;
         default:
             return SSLError::ERR;
     }
@@ -394,9 +269,8 @@ void SslConnection::handleError(SSLError error)
         case SSLError::WANT_WRITE:
             // 需要等待更多数据或写入缓冲区可用
             break;
-        case SSLError::SSL:
+        case SSLError::ERR:
         case SSLError::SYSCALL:
-        case SSLError::UNKNOWN:
             LOG_ERROR << "SSL error occurred: " << ERR_error_string(ERR_get_error(), nullptr);
             state_ = SSLState::ERROR;
             conn_->shutdown();

@@ -55,6 +55,7 @@ private:
     std::condition_variable                   cv_;
     bool                                      initialized_ = false;
     std::thread                               checkThread_; // 添加检查线程
+    bool                                      isRunning_;
 };
 
 } // namespace db

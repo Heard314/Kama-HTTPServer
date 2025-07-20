@@ -36,6 +36,7 @@ file(GLOB_RECURSE GOMOKU_SERVER_SRC
 
 # 添加主程序文件
 set(MAIN_SRC "${PROJECT_SOURCE_DIR}/WebApps/GomokuServer/src/main.cpp")
+set(TEST_SRC "${PROJECT_SOURCE_DIR}/HttpServer/examples/test_client.cc")
 
 # 如果主程序文件不存在，创建一个
 if(NOT EXISTS ${MAIN_SRC})
@@ -63,6 +64,11 @@ add_executable(simple_server
     ${GOMOKU_SERVER_SRC}
 )
 
+add_executable(simple_client
+        ${TEST_SRC}
+        ${HTTP_SERVER_SRC}
+)
+
 # 链接必要的库
 target_link_libraries(simple_server
     pthread
@@ -72,6 +78,16 @@ target_link_libraries(simple_server
     mysqlclient
     ssl
     crypto
+)
+
+target_link_libraries(simple_client
+        pthread
+        muduo_net
+        muduo_base
+        mysqlcppconn
+        mysqlclient
+        ssl
+        crypto
 )
 
 # 打印调试信息

@@ -143,8 +143,8 @@ private:
     std::unique_ptr<ssl::SslContext>             sslCtx_; // SSL 上下文
     bool                                         useSSL_; // 是否使用 SSL   
     // TcpConnectionPtr -> SslConnectionPtr 
-    std::map<muduo::net::TcpConnectionPtr, std::unique_ptr<ssl::SslConnection>> sslConns_;
-    std::map<muduo::net::TcpConnectionPtr, muduo::net::Buffer> connsWriteBuffer;
+    std::map<muduo::net::TcpConnectionPtr, std::shared_ptr<ssl::SslConnection>> sslConns_;
+//    std::map<muduo::net::TcpConnectionPtr, muduo::net::Buffer> connsWriteBuffer;
 };
 
 } // namespace http

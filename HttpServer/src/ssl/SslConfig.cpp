@@ -17,5 +17,4 @@ SslConfig::SslConfig(
     setCertificateChainFile(chainFile);
     setPrivateKeyFile(keyFile);
 }
-
 };

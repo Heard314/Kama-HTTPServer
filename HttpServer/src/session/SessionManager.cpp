@@ -12,13 +12,19 @@ namespace session
 SessionManager::SessionManager(std::unique_ptr<SessionStorage> storage)
     : storage_(std::move(storage)) 
     , rng_(std::random_device{}()) // 初始化随机数生成器，用于生成随机的会话ID
-{}
+{
+    whiteWebAddrs.insert("/login");
+}
 
 // 从请求中获取或创建会话，也就是说，如果请求中包含会话ID，则从存储中加载会话，否则创建一个新的会话
-std::shared_ptr<Session> SessionManager::getSession(const HttpRequest& req, HttpResponse* resp)
-{   
-    std::string sessionId = getSessionIdFromCookie(req);
-    
+std::shared_ptr<Session> SessionManager::getSession(const HttpRequest& req, HttpResponse* resp, std::string reqAddr)
+{
+    std::string sessionId = "";
+    if(reqAddr.empty() || !whiteWebAddrs.count(reqAddr))
+    {
+        sessionId = getSessionIdFromCookie(req);
+    }
+    std::cout<< "The id of session is "<<sessionId <<"\n";
     std::shared_ptr<Session> session;
 
     if (!sessionId.empty())
@@ -72,7 +78,7 @@ std::string SessionManager::getSessionIdFromCookie(const HttpRequest& req)
 {
     std::string sessionId;
     std::string cookie = req.getHeader("Cookie");
-
+    std::cout<<"The cookie is "<<cookie<<"\n";
     if (!cookie.empty())
     {
         size_t pos = cookie.find("sessionId=");

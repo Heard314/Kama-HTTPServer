@@ -78,7 +78,7 @@ bool DbConnection::isValid()
     {
         if (!conn_) return false;
         std::unique_ptr<sql::Statement> stmt(conn_->createStatement());
-        stmt->execute("SELECT 1");
+        std::unique_ptr<sql::ResultSet> rs(stmt->executeQuery("SELECT 1"));
         return true;
     } 
     catch (const sql::SQLException&) 

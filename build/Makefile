@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named simple_client
+
+# Build rule for target.
+simple_client: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 simple_client
+.PHONY : simple_client
+
+# fast build rule for target.
+simple_client/fast:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/build
+.PHONY : simple_client/fast
+
+#=============================================================================
 # Target rules for targets named simple_server
 
 # Build rule for target.
@@ -123,12 +136,40 @@ simple_server/fast:
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/build
 .PHONY : simple_server/fast
 
+HttpServer/examples/test_client.o: HttpServer/examples/test_client.cc.o
+
+.PHONY : HttpServer/examples/test_client.o
+
+# target to build an object file
+HttpServer/examples/test_client.cc.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/examples/test_client.cc.o
+.PHONY : HttpServer/examples/test_client.cc.o
+
+HttpServer/examples/test_client.i: HttpServer/examples/test_client.cc.i
+
+.PHONY : HttpServer/examples/test_client.i
+
+# target to preprocess a source file
+HttpServer/examples/test_client.cc.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/examples/test_client.cc.i
+.PHONY : HttpServer/examples/test_client.cc.i
+
+HttpServer/examples/test_client.s: HttpServer/examples/test_client.cc.s
+
+.PHONY : HttpServer/examples/test_client.s
+
+# target to generate assembly for a file
+HttpServer/examples/test_client.cc.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/examples/test_client.cc.s
+.PHONY : HttpServer/examples/test_client.cc.s
+
 HttpServer/src/http/HttpContext.o: HttpServer/src/http/HttpContext.cpp.o
 
 .PHONY : HttpServer/src/http/HttpContext.o
 
 # target to build an object file
 HttpServer/src/http/HttpContext.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpContext.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpContext.cpp.o
 .PHONY : HttpServer/src/http/HttpContext.cpp.o
 
@@ -138,6 +179,7 @@ HttpServer/src/http/HttpContext.i: HttpServer/src/http/HttpContext.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/http/HttpContext.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpContext.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpContext.cpp.i
 .PHONY : HttpServer/src/http/HttpContext.cpp.i
 
@@ -147,6 +189,7 @@ HttpServer/src/http/HttpContext.s: HttpServer/src/http/HttpContext.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/http/HttpContext.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpContext.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpContext.cpp.s
 .PHONY : HttpServer/src/http/HttpContext.cpp.s
 
@@ -156,6 +199,7 @@ HttpServer/src/http/HttpRequest.o: HttpServer/src/http/HttpRequest.cpp.o
 
 # target to build an object file
 HttpServer/src/http/HttpRequest.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpRequest.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpRequest.cpp.o
 .PHONY : HttpServer/src/http/HttpRequest.cpp.o
 
@@ -165,6 +209,7 @@ HttpServer/src/http/HttpRequest.i: HttpServer/src/http/HttpRequest.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/http/HttpRequest.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpRequest.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpRequest.cpp.i
 .PHONY : HttpServer/src/http/HttpRequest.cpp.i
 
@@ -174,6 +219,7 @@ HttpServer/src/http/HttpRequest.s: HttpServer/src/http/HttpRequest.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/http/HttpRequest.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpRequest.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpRequest.cpp.s
 .PHONY : HttpServer/src/http/HttpRequest.cpp.s
 
@@ -183,6 +229,7 @@ HttpServer/src/http/HttpResponse.o: HttpServer/src/http/HttpResponse.cpp.o
 
 # target to build an object file
 HttpServer/src/http/HttpResponse.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpResponse.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpResponse.cpp.o
 .PHONY : HttpServer/src/http/HttpResponse.cpp.o
 
@@ -192,6 +239,7 @@ HttpServer/src/http/HttpResponse.i: HttpServer/src/http/HttpResponse.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/http/HttpResponse.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpResponse.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpResponse.cpp.i
 .PHONY : HttpServer/src/http/HttpResponse.cpp.i
 
@@ -201,6 +249,7 @@ HttpServer/src/http/HttpResponse.s: HttpServer/src/http/HttpResponse.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/http/HttpResponse.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpResponse.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpResponse.cpp.s
 .PHONY : HttpServer/src/http/HttpResponse.cpp.s
 
@@ -210,6 +259,7 @@ HttpServer/src/http/HttpServer.o: HttpServer/src/http/HttpServer.cpp.o
 
 # target to build an object file
 HttpServer/src/http/HttpServer.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpServer.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpServer.cpp.o
 .PHONY : HttpServer/src/http/HttpServer.cpp.o
 
@@ -219,6 +269,7 @@ HttpServer/src/http/HttpServer.i: HttpServer/src/http/HttpServer.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/http/HttpServer.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpServer.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpServer.cpp.i
 .PHONY : HttpServer/src/http/HttpServer.cpp.i
 
@@ -228,6 +279,7 @@ HttpServer/src/http/HttpServer.s: HttpServer/src/http/HttpServer.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/http/HttpServer.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/http/HttpServer.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/http/HttpServer.cpp.s
 .PHONY : HttpServer/src/http/HttpServer.cpp.s
 
@@ -237,6 +289,7 @@ HttpServer/src/middleware/MiddlewareChain.o: HttpServer/src/middleware/Middlewar
 
 # target to build an object file
 HttpServer/src/middleware/MiddlewareChain.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/middleware/MiddlewareChain.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/middleware/MiddlewareChain.cpp.o
 .PHONY : HttpServer/src/middleware/MiddlewareChain.cpp.o
 
@@ -246,6 +299,7 @@ HttpServer/src/middleware/MiddlewareChain.i: HttpServer/src/middleware/Middlewar
 
 # target to preprocess a source file
 HttpServer/src/middleware/MiddlewareChain.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/middleware/MiddlewareChain.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/middleware/MiddlewareChain.cpp.i
 .PHONY : HttpServer/src/middleware/MiddlewareChain.cpp.i
 
@@ -255,6 +309,7 @@ HttpServer/src/middleware/MiddlewareChain.s: HttpServer/src/middleware/Middlewar
 
 # target to generate assembly for a file
 HttpServer/src/middleware/MiddlewareChain.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/middleware/MiddlewareChain.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/middleware/MiddlewareChain.cpp.s
 .PHONY : HttpServer/src/middleware/MiddlewareChain.cpp.s
 
@@ -264,6 +319,7 @@ HttpServer/src/middleware/cors/CorsMiddleware.o: HttpServer/src/middleware/cors/
 
 # target to build an object file
 HttpServer/src/middleware/cors/CorsMiddleware.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/middleware/cors/CorsMiddleware.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/middleware/cors/CorsMiddleware.cpp.o
 .PHONY : HttpServer/src/middleware/cors/CorsMiddleware.cpp.o
 
@@ -273,6 +329,7 @@ HttpServer/src/middleware/cors/CorsMiddleware.i: HttpServer/src/middleware/cors/
 
 # target to preprocess a source file
 HttpServer/src/middleware/cors/CorsMiddleware.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/middleware/cors/CorsMiddleware.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/middleware/cors/CorsMiddleware.cpp.i
 .PHONY : HttpServer/src/middleware/cors/CorsMiddleware.cpp.i
 
@@ -282,6 +339,7 @@ HttpServer/src/middleware/cors/CorsMiddleware.s: HttpServer/src/middleware/cors/
 
 # target to generate assembly for a file
 HttpServer/src/middleware/cors/CorsMiddleware.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/middleware/cors/CorsMiddleware.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/middleware/cors/CorsMiddleware.cpp.s
 .PHONY : HttpServer/src/middleware/cors/CorsMiddleware.cpp.s
 
@@ -291,6 +349,7 @@ HttpServer/src/router/Router.o: HttpServer/src/router/Router.cpp.o
 
 # target to build an object file
 HttpServer/src/router/Router.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/router/Router.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/router/Router.cpp.o
 .PHONY : HttpServer/src/router/Router.cpp.o
 
@@ -300,6 +359,7 @@ HttpServer/src/router/Router.i: HttpServer/src/router/Router.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/router/Router.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/router/Router.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/router/Router.cpp.i
 .PHONY : HttpServer/src/router/Router.cpp.i
 
@@ -309,6 +369,7 @@ HttpServer/src/router/Router.s: HttpServer/src/router/Router.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/router/Router.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/router/Router.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/router/Router.cpp.s
 .PHONY : HttpServer/src/router/Router.cpp.s
 
@@ -318,6 +379,7 @@ HttpServer/src/session/Session.o: HttpServer/src/session/Session.cpp.o
 
 # target to build an object file
 HttpServer/src/session/Session.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/Session.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/Session.cpp.o
 .PHONY : HttpServer/src/session/Session.cpp.o
 
@@ -327,6 +389,7 @@ HttpServer/src/session/Session.i: HttpServer/src/session/Session.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/session/Session.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/Session.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/Session.cpp.i
 .PHONY : HttpServer/src/session/Session.cpp.i
 
@@ -336,6 +399,7 @@ HttpServer/src/session/Session.s: HttpServer/src/session/Session.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/session/Session.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/Session.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/Session.cpp.s
 .PHONY : HttpServer/src/session/Session.cpp.s
 
@@ -345,6 +409,7 @@ HttpServer/src/session/SessionManager.o: HttpServer/src/session/SessionManager.c
 
 # target to build an object file
 HttpServer/src/session/SessionManager.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/SessionManager.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/SessionManager.cpp.o
 .PHONY : HttpServer/src/session/SessionManager.cpp.o
 
@@ -354,6 +419,7 @@ HttpServer/src/session/SessionManager.i: HttpServer/src/session/SessionManager.c
 
 # target to preprocess a source file
 HttpServer/src/session/SessionManager.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/SessionManager.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/SessionManager.cpp.i
 .PHONY : HttpServer/src/session/SessionManager.cpp.i
 
@@ -363,6 +429,7 @@ HttpServer/src/session/SessionManager.s: HttpServer/src/session/SessionManager.c
 
 # target to generate assembly for a file
 HttpServer/src/session/SessionManager.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/SessionManager.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/SessionManager.cpp.s
 .PHONY : HttpServer/src/session/SessionManager.cpp.s
 
@@ -372,6 +439,7 @@ HttpServer/src/session/SessionStorage.o: HttpServer/src/session/SessionStorage.c
 
 # target to build an object file
 HttpServer/src/session/SessionStorage.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/SessionStorage.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/SessionStorage.cpp.o
 .PHONY : HttpServer/src/session/SessionStorage.cpp.o
 
@@ -381,6 +449,7 @@ HttpServer/src/session/SessionStorage.i: HttpServer/src/session/SessionStorage.c
 
 # target to preprocess a source file
 HttpServer/src/session/SessionStorage.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/SessionStorage.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/SessionStorage.cpp.i
 .PHONY : HttpServer/src/session/SessionStorage.cpp.i
 
@@ -390,6 +459,7 @@ HttpServer/src/session/SessionStorage.s: HttpServer/src/session/SessionStorage.c
 
 # target to generate assembly for a file
 HttpServer/src/session/SessionStorage.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/session/SessionStorage.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/session/SessionStorage.cpp.s
 .PHONY : HttpServer/src/session/SessionStorage.cpp.s
 
@@ -399,6 +469,7 @@ HttpServer/src/ssl/SslConfig.o: HttpServer/src/ssl/SslConfig.cpp.o
 
 # target to build an object file
 HttpServer/src/ssl/SslConfig.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslConfig.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslConfig.cpp.o
 .PHONY : HttpServer/src/ssl/SslConfig.cpp.o
 
@@ -408,6 +479,7 @@ HttpServer/src/ssl/SslConfig.i: HttpServer/src/ssl/SslConfig.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/ssl/SslConfig.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslConfig.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslConfig.cpp.i
 .PHONY : HttpServer/src/ssl/SslConfig.cpp.i
 
@@ -417,6 +489,7 @@ HttpServer/src/ssl/SslConfig.s: HttpServer/src/ssl/SslConfig.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/ssl/SslConfig.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslConfig.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslConfig.cpp.s
 .PHONY : HttpServer/src/ssl/SslConfig.cpp.s
 
@@ -426,6 +499,7 @@ HttpServer/src/ssl/SslConnection.o: HttpServer/src/ssl/SslConnection.cpp.o
 
 # target to build an object file
 HttpServer/src/ssl/SslConnection.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslConnection.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslConnection.cpp.o
 .PHONY : HttpServer/src/ssl/SslConnection.cpp.o
 
@@ -435,6 +509,7 @@ HttpServer/src/ssl/SslConnection.i: HttpServer/src/ssl/SslConnection.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/ssl/SslConnection.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslConnection.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslConnection.cpp.i
 .PHONY : HttpServer/src/ssl/SslConnection.cpp.i
 
@@ -444,6 +519,7 @@ HttpServer/src/ssl/SslConnection.s: HttpServer/src/ssl/SslConnection.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/ssl/SslConnection.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslConnection.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslConnection.cpp.s
 .PHONY : HttpServer/src/ssl/SslConnection.cpp.s
 
@@ -453,6 +529,7 @@ HttpServer/src/ssl/SslContext.o: HttpServer/src/ssl/SslContext.cpp.o
 
 # target to build an object file
 HttpServer/src/ssl/SslContext.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslContext.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslContext.cpp.o
 .PHONY : HttpServer/src/ssl/SslContext.cpp.o
 
@@ -462,6 +539,7 @@ HttpServer/src/ssl/SslContext.i: HttpServer/src/ssl/SslContext.cpp.i
 
 # target to preprocess a source file
 HttpServer/src/ssl/SslContext.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslContext.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslContext.cpp.i
 .PHONY : HttpServer/src/ssl/SslContext.cpp.i
 
@@ -471,6 +549,7 @@ HttpServer/src/ssl/SslContext.s: HttpServer/src/ssl/SslContext.cpp.s
 
 # target to generate assembly for a file
 HttpServer/src/ssl/SslContext.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/ssl/SslContext.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/ssl/SslContext.cpp.s
 .PHONY : HttpServer/src/ssl/SslContext.cpp.s
 
@@ -480,6 +559,7 @@ HttpServer/src/utils/db/DbConnection.o: HttpServer/src/utils/db/DbConnection.cpp
 
 # target to build an object file
 HttpServer/src/utils/db/DbConnection.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/utils/db/DbConnection.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/utils/db/DbConnection.cpp.o
 .PHONY : HttpServer/src/utils/db/DbConnection.cpp.o
 
@@ -489,6 +569,7 @@ HttpServer/src/utils/db/DbConnection.i: HttpServer/src/utils/db/DbConnection.cpp
 
 # target to preprocess a source file
 HttpServer/src/utils/db/DbConnection.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/utils/db/DbConnection.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/utils/db/DbConnection.cpp.i
 .PHONY : HttpServer/src/utils/db/DbConnection.cpp.i
 
@@ -498,6 +579,7 @@ HttpServer/src/utils/db/DbConnection.s: HttpServer/src/utils/db/DbConnection.cpp
 
 # target to generate assembly for a file
 HttpServer/src/utils/db/DbConnection.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/utils/db/DbConnection.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/utils/db/DbConnection.cpp.s
 .PHONY : HttpServer/src/utils/db/DbConnection.cpp.s
 
@@ -507,6 +589,7 @@ HttpServer/src/utils/db/DbConnectionPool.o: HttpServer/src/utils/db/DbConnection
 
 # target to build an object file
 HttpServer/src/utils/db/DbConnectionPool.cpp.o:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/utils/db/DbConnectionPool.cpp.o
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/utils/db/DbConnectionPool.cpp.o
 .PHONY : HttpServer/src/utils/db/DbConnectionPool.cpp.o
 
@@ -516,6 +599,7 @@ HttpServer/src/utils/db/DbConnectionPool.i: HttpServer/src/utils/db/DbConnection
 
 # target to preprocess a source file
 HttpServer/src/utils/db/DbConnectionPool.cpp.i:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/utils/db/DbConnectionPool.cpp.i
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/utils/db/DbConnectionPool.cpp.i
 .PHONY : HttpServer/src/utils/db/DbConnectionPool.cpp.i
 
@@ -525,6 +609,7 @@ HttpServer/src/utils/db/DbConnectionPool.s: HttpServer/src/utils/db/DbConnection
 
 # target to generate assembly for a file
 HttpServer/src/utils/db/DbConnectionPool.cpp.s:
+	$(MAKE) -f CMakeFiles/simple_client.dir/build.make CMakeFiles/simple_client.dir/HttpServer/src/utils/db/DbConnectionPool.cpp.s
 	$(MAKE) -f CMakeFiles/simple_server.dir/build.make CMakeFiles/simple_server.dir/HttpServer/src/utils/db/DbConnectionPool.cpp.s
 .PHONY : HttpServer/src/utils/db/DbConnectionPool.cpp.s
 
@@ -833,7 +918,11 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... simple_client"
 	@echo "... simple_server"
+	@echo "... HttpServer/examples/test_client.o"
+	@echo "... HttpServer/examples/test_client.i"
+	@echo "... HttpServer/examples/test_client.s"
 	@echo "... HttpServer/src/http/HttpContext.o"
 	@echo "... HttpServer/src/http/HttpContext.i"
 	@echo "... HttpServer/src/http/HttpContext.s"

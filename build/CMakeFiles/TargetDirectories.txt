@@ -1,3 +1,4 @@
 /home/yangmf/Project/Kama-HTTPServer/build/CMakeFiles/rebuild_cache.dir
 /home/yangmf/Project/Kama-HTTPServer/build/CMakeFiles/edit_cache.dir
+/home/yangmf/Project/Kama-HTTPServer/build/CMakeFiles/simple_client.dir
 /home/yangmf/Project/Kama-HTTPServer/build/CMakeFiles/simple_server.dir

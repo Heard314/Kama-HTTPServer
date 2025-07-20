@@ -38,17 +38,19 @@ void DbConnectionPool::init(const std::string& host,
 
 DbConnectionPool::DbConnectionPool() 
 {
+    isRunning_ = true;
     checkThread_ = std::thread(&DbConnectionPool::checkConnections, this);
-    checkThread_.detach();
 }
 
 DbConnectionPool::~DbConnectionPool() 
 {
     std::lock_guard<std::mutex> lock(mutex_);
+    isRunning_ = false;
     while (!connections_.empty()) 
     {
         connections_.pop();
     }
+    checkThread_.join();
     LOG_INFO << "Database connection pool destroyed";
 }
 
@@ -116,6 +118,10 @@ void DbConnectionPool::checkConnections()
             std::vector<std::shared_ptr<DbConnection>> connsToCheck;
             {
                 std::unique_lock<std::mutex> lock(mutex_);
+                if(isRunning_ == false)
+                {
+                    break;
+                }
                 if (connections_.empty()) 
                 {
                     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -146,7 +152,7 @@ void DbConnectionPool::checkConnections()
                 }
             }
             
-            std::this_thread::sleep_for(std::chrono::seconds(60));
+            std::this_thread::sleep_for(std::chrono::seconds(5));
         } 
         catch (const std::exception& e) 
         {

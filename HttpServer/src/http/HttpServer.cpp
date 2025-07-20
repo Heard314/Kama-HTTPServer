@@ -87,32 +87,20 @@ void HttpServer::onConnection(const muduo::net::TcpConnectionPtr& conn)
 //        connsWriteBuffer[conn] = muduo::net::Buffer();
         if (useSSL_)
         {
-            auto sslConn = std::make_shared<ssl::SslConnection>(conn, sslCtx_.get());
-//            sslConn->setMessageCallback(
-//                std::bind(&HttpServer::onSslMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-            sslConns_[conn] = std::move(sslConn);
+            sslConns_[conn] = std::make_unique<ssl::SslConnection>(conn, sslCtx_.get());
 //            sslConns_[conn]->startHandshake();
 //            sslConn->startHandshake();
-            // 设置 conn 的 messageCallback，将数据传递给 SslConnection 处理
-//            conn->setMessageCallback(
-//                    [sslConn](const muduo::net::TcpConnectionPtr& tcpConn, muduo::net::Buffer* buf, muduo::Timestamp receiveTime) {
-//                        sslConn->onRead(tcpConn, buf, receiveTime);
-//                    });
         }
     }
     else 
     {
         // 连接断开处理
-        if (useSSL_) {
-//            auto contextPtr = boost::any_cast<std::shared_ptr<ssl::SslConnection>>(conn->getContext());
-//            if (contextPtr) {
-//                LOG_INFO << "SSL connection closed for " << conn->peerAddress().toIpPort();
-                // SslConnection 对象是 std::shared_ptr，当 conn 的生命周期结束，
-                // 并且没有其他 shared_ptr 指向它时，会自动销毁，
-                // SslConnection 的析构函数会清理 OpenSSL 相关的资源 (SSL_shutdown, SSL_free)。
-                // 你可能需要在这里做一些额外的清理工作，如果 SslConnection 持有其他需要显式释放的资源。
-            }
-        } else {
+        if (useSSL_)
+        {
+
+        }
+        else
+        {
             LOG_INFO << "HTTP connection closed for " << conn->peerAddress().toIpPort();
             // 对于非 SSL 连接，HttpContext 是存储在 conn 的上下文中的值对象，
             // muduo 会自动处理其生命周期。你可能需要在这里做一些额外的清理工作，
@@ -120,27 +108,6 @@ void HttpServer::onConnection(const muduo::net::TcpConnectionPtr& conn)
         }
     }
 }
-
-//void HttpServer::onSslMessage(const muduo::net::TcpConnectionPtr &conn,
-//                                   muduo::net::Buffer *buf,
-//                                   muduo::Timestamp receiveTime) {
-//    try {
-//        HttpContext *context = boost::any_cast<HttpContext>(conn->getMutableContext());
-//        if (!context->parseRequest(buf, receiveTime)) {
-//            conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
-//            conn->shutdown();
-//            return;
-//        }
-//        if (context->gotAll()) {
-//            httpHandler(conn, context->request());
-//            context->reset();
-//        }
-//    } catch (const std::exception &e) {
-//        LOG_ERROR << "Exception in processSslMessage: " << e.what();
-//        conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
-//        conn->shutdown();
-//    }
-//}
 
 void HttpServer::onMessage(const muduo::net::TcpConnectionPtr &conn,
                            muduo::net::Buffer *buf,
@@ -153,34 +120,45 @@ void HttpServer::onMessage(const muduo::net::TcpConnectionPtr &conn,
             LOG_INFO << "onMessage useSSL_ is true";
             // 1.查找对应的SSL连接
             auto it = sslConns_.find(conn);
-            if (it != sslConns_.end())
-            {
-                auto sslConn = it->second;
-                LOG_INFO << "onMessage sslConns_ is not empty";
-                // 2. 将收到的消息放到SSL的rbio中
-                // 3. 然后通过SSL_read把解密数据读出来
-//                it->second->onRead(conn, buf, receiveTime);
-                muduo::net::Buffer* decryptedBuf = sslConn->transferToBioAndRead(buf);
-                // 3. 如果 SSL 握手还未完成，直接返回
-//                if (!it->second->isHandshakeCompleted())
-//                {
-//                    LOG_INFO << "onMessage sslConns_ is not empty";
-//                    return;
-//                }
-                if (decryptedBuf->readableBytes() == 0)
-                    return; // 没有解密后的数据
 
-                // 4. 使用解密后的数据进行HTTP 处理
-                buf = decryptedBuf; // 将 buf 指向解密后的数据
-                LOG_INFO << "onMessage decryptedBuf is not empty";
+            assert(it != sslConns_.end());
+
+            auto sslConn = it->second;
+            LOG_INFO << "onMessage sslConns_ is not empty";
+            // 2. 将收到的消息放到SSL的rbio中
+            // 3. 然后通过SSL_read把解密数据读出来
+//                it->second->onRead(conn, buf, receiveTime);
+            int err = sslConn->transferToBioAndRead(buf);
+            if(err == -1)
+            {
+                LOG_ERROR<<"transferToBioAndRead Error."<<"\n";
             }
+            muduo::net::Buffer decryptedBuf = sslConn->popDecryptedBuffer();
+            if (decryptedBuf.readableBytes() == 0)
+                return; // 没有解密后的数据
+
+            // 4. 使用解密后的数据进行HTTP 处理
+            buf = &decryptedBuf; // 将 buf 指向解密后的数据
+            LOG_INFO << "onMessage decryptedBuf is not empty";
         }
         // HttpContext对象用于解析出buf中的请求报文，并把报文的关键信息封装到HttpRequest对象中
         HttpContext *context = boost::any_cast<HttpContext>(conn->getMutableContext());
         if (!context->parseRequest(buf, receiveTime)) // 解析一个http请求
         {
+            muduo::net::Buffer buf = muduo::net::Buffer();
+            buf.append("HTTP/1.1 400 Bad Request\r\n\r\n");
+            if(useSSL_)
+            {
+                auto it = sslConns_.find(conn);
+                int err = it->second->encryptAndBufferWrite(buf);
+                if(err == -1)
+                {
+                    LOG_ERROR<<"encryptAndBufferWrite Error."<<"\n";
+                }
+                buf = it->second->popReadySendBuffer();
+            }
             // 如果解析http报文过程中出错
-            conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
+            conn->send(&buf);
             conn->shutdown();
         }
         // 如果buf缓冲区中解析出一个完整的数据包才封装响应报文
@@ -194,7 +172,20 @@ void HttpServer::onMessage(const muduo::net::TcpConnectionPtr &conn,
     {
         // 捕获异常，返回错误信息
         LOG_ERROR << "Exception in onMessage: " << e.what();
-        conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
+        muduo::net::Buffer buf = muduo::net::Buffer();
+        buf.append("HTTP/1.1 400 Bad Request\r\n\r\n");
+        if(useSSL_)
+        {
+            auto it = sslConns_.find(conn);
+            int err = it->second->encryptAndBufferWrite(buf);
+            if(err == -1)
+            {
+                LOG_ERROR<<"encryptAndBufferWrite Error."<<"\n";
+            }
+            buf = it->second->popReadySendBuffer();
+        }
+        // 如果解析http报文过程中出错
+        conn->send(&buf);
         conn->shutdown();
     }
 }
@@ -214,7 +205,16 @@ void HttpServer::httpHandler(const muduo::net::TcpConnectionPtr &conn, const Htt
     response.appendToBuffer(&buf);
     // 打印完整的响应内容用于调试
     LOG_INFO << "Sending response:\n" << buf.toStringPiece().as_string();
-
+    if(useSSL_)
+    {
+        auto it = sslConns_.find(conn);
+        int err = it->second->encryptAndBufferWrite(buf);
+        if(err == -1)
+        {
+            LOG_ERROR<<"encryptAndBufferWrite Error."<<"\n";
+        }
+        buf = it->second->popReadySendBuffer();
+    }
     conn->send(&buf);
     // 如果是短连接的话，返回响应报文后就断开连接
     if (response.closeConnection())

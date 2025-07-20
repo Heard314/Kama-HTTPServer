@@ -27,7 +27,30 @@ public:
     void send(const void* data, size_t len);
     void onRead(const TcpConnectionPtr& conn, BufferPtr buf, muduo::Timestamp time);
 //    bool isHandshakeCompleted() const { return state_ == SSLState::ESTABLISHED; }
-    muduo::net::Buffer* getDecryptedBuffer() { return &decryptedBuffer_; }
+    void writeDecryptedBuffer(const char* data, size_t len)
+    {
+        decryptedBuffer_.append(data,len);
+    }
+
+    muduo::net::Buffer popDecryptedBuffer()
+    {
+        muduo::net::Buffer result = muduo::net::Buffer();
+        decryptedBuffer_.swap(result);
+        return result;
+    }
+
+    void writeReadySendBuffer(const char* data, size_t len)
+    {
+        readySendBuffer_.append(data,len);
+    }
+
+    muduo::net::Buffer popReadySendBuffer()
+    {
+        muduo::net::Buffer result = muduo::net::Buffer();
+        readySendBuffer_.swap(result);
+        return result;
+    }
+
     // SSL BIO 操作回调
     static int bioWrite(BIO* bio, const char* data, int len);
     static int bioRead(BIO* bio, char* data, int len);
@@ -35,7 +58,7 @@ public:
     // 设置消息回调函数
     void setMessageCallback(const MessageCallback& cb) { messageCallback_ = cb; }
     int transferToBioAndRead(muduo::net::Buffer* buffer);
-    int encryptAndBufferWrite();
+    int encryptAndBufferWrite(muduo::net::Buffer& buffer);
 
 private:
     void handleHandshake();
@@ -46,8 +69,6 @@ private:
     void flushWriteBio();
     void handleWrite();
 
-    //新加的函数
-    void writeDecryptedBuffer(const char * buf, size_t len) { decryptedBuffer_->append(buf, (size_t)n); }
 
 
 private:
@@ -61,6 +82,7 @@ private:
     muduo::net::Buffer  readBuffer_; // 读缓冲区
     muduo::net::Buffer  writeBuffer_; // 写缓冲区
     muduo::net::Buffer  decryptedBuffer_; // 解密后的数据
+    muduo::net::Buffer  readySendBuffer_; //准备发送出去的数据
     MessageCallback     messageCallback_; // 消息回调
 
 

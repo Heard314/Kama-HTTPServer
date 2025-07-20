@@ -5,6 +5,7 @@
 #include "../http/HttpResponse.h"
 #include <memory>
 #include <random>
+#include <unordered_set>
 
 namespace http
 {
@@ -17,7 +18,7 @@ public:
     explicit SessionManager(std::unique_ptr<SessionStorage> storage);
 
     // 从请求中获取或创建会话
-    std::shared_ptr<Session> getSession(const HttpRequest& req, HttpResponse* resp);
+    std::shared_ptr<Session> getSession(const HttpRequest& req, HttpResponse* resp, std::string reqAddr = "");
     
      // 销毁会话
     void destroySession(const std::string& sessionId);
@@ -38,6 +39,7 @@ private:
 private:
     std::unique_ptr<SessionStorage> storage_;
     std::mt19937 rng_; // 用于生成随机会话id
+    std::unordered_set<std::string> whiteWebAddrs;
 };
 
 } // namespace session
