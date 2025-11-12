@@ -1,6 +1,6 @@
 # Kama-HTTPServer
 
-**本项目目前只在[知识星球](https://programmercarl.com/other/kstar.html)答疑并维护**。
+> **本项目目前只在[知识星球](https://programmercarl.com/other/kstar.html)答疑并维护**。
 
 这次带大家用C++开发一个 HTTP服务框架！
 
@@ -134,7 +134,7 @@ HTTP 框架抽象了网络通信的复杂性，使开发人员能够专注于构
 本项目作为http服务框架，我们还为大家在本框架下 开发了一个小例子，在线五子棋： （注意五子棋不是本项目重点，仅仅是基于本项目给大家举一个开发例子）
 
 <div align="center"><img src='https://file1.kamacoder.com/i/algo/20250303110852.png' width=500 alt=''></img></div>
-![](https://file1.kamacoder.com/i/algo/20250303110852.png)
+
 
 给出框架的优化思路：
 
