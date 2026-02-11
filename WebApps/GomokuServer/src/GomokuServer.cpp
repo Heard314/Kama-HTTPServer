@@ -16,7 +16,7 @@ using namespace http;
 GomokuServer::GomokuServer(int port,
                            const std::string &name,
                            muduo::net::TcpServer::Option option)
-    : httpServer_(port, name, option), maxOnline_(0)
+    : httpServer_(port, name, true, option), maxOnline_(0)
 {
     initialize();
 }
@@ -34,7 +34,7 @@ void GomokuServer::start()
 void GomokuServer::initialize()
 {
     // 初始化数据库连接池
-    http::MysqlUtil::init("tcp://127.0.0.1:3306", "root", "root", "Gomoku", 10);
+    http::MysqlUtil::init("tcp://172.20.224.1:3306", "admin", "123456", "Gomoku", 10);
     // 初始化会话
     initializeSession();
     // 初始化中间件

@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
   LOG_INFO << "pid = " << getpid();
   
   std::string serverName = "HttpServer";
-  int port = 80;
+  int port = 8080;
   
   // 参数解析
   int opt;
