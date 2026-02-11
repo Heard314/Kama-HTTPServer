@@ -33,10 +33,12 @@ class GomokuServer
 public:
     GomokuServer(int port,
                  const std::string& name,
+                 bool useSSL = false,
                  muduo::net::TcpServer::Option option = muduo::net::TcpServer::kNoReusePort);
 
     void setThreadNum(int numThreads);
     void start();
+    void setSslConfig(const ssl::SslConfig& config);
 private:
     void initialize();
     void initializeSession();

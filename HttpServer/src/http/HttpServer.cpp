@@ -31,6 +31,11 @@ HttpServer::HttpServer(int port,
 void HttpServer::start()
 {
     LOG_WARN << "HttpServer[" << server_.name() << "] starts listening on" << server_.ipPort();
+    if (useSSL_ && !sslCtx_)
+    {
+        LOG_ERROR << "SSL enabled but sslCtx_ not initialized. Call setSslConfig() before start().";
+        abort();
+    }
     server_.start();
     mainLoop_.loop();
 }
@@ -64,15 +69,21 @@ void HttpServer::onConnection(const muduo::net::TcpConnectionPtr& conn)
 {
     if (conn->connected())
     {
+        conn->setContext(HttpContext());
         if (useSSL_)
         {
+            if (!sslCtx_)
+            {
+                LOG_ERROR << "useSSL_ is true but sslCtx_ is null. Call setSslConfig() before start().";
+                conn->shutdown();
+                return;
+            }
             auto sslConn = std::make_unique<ssl::SslConnection>(conn, sslCtx_.get());
-            sslConn->setMessageCallback(
-                std::bind(&HttpServer::onMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            // sslConn->setMessageCallback(
+            //     std::bind(&HttpServer::onMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             sslConns_[conn] = std::move(sslConn);
             sslConns_[conn]->startHandshake();
         }
-        conn->setContext(HttpContext());
     }
     else 
     {
@@ -95,42 +106,62 @@ void HttpServer::onMessage(const muduo::net::TcpConnectionPtr &conn,
             LOG_INFO << "onMessage useSSL_ is true";
             // 1.查找对应的SSL连接
             auto it = sslConns_.find(conn);
-            if (it != sslConns_.end())
+            if (it == sslConns_.end())
+            {
+                conn->shutdown();
+                return;
+            }
+            LOG_INFO << "onMessage sslConns_ is not empty";
+            // 2. SSL连接处理数据
+            it->second->onRead(conn, buf, receiveTime);
+
+            // 3. 如果 SSL 握手还未完成，直接返回
+            if (!it->second->isHandshakeCompleted())
             {
                 LOG_INFO << "onMessage sslConns_ is not empty";
-                // 2. SSL连接处理数据
-                it->second->onRead(conn, buf, receiveTime);
-
-                // 3. 如果 SSL 握手还未完成，直接返回
-                if (!it->second->isHandshakeCompleted())
-                {
-                    LOG_INFO << "onMessage sslConns_ is not empty";
-                    return;
-                }
-
-                // 4. 从SSL连接的解密缓冲区获取数据
-                muduo::net::Buffer* decryptedBuf = it->second->getDecryptedBuffer();
-                if (decryptedBuf->readableBytes() == 0)
-                    return; // 没有解密后的数据
-
-                // 5. 使用解密后的数据进行HTTP 处理
-                buf = decryptedBuf; // 将 buf 指向解密后的数据
-                LOG_INFO << "onMessage decryptedBuf is not empty";
+                return;
             }
+
+            // 4. 从SSL连接的解密缓冲区获取数据
+            muduo::net::Buffer* decryptedBuf = it->second->getDecryptedBuffer();
+            if (decryptedBuf->readableBytes() == 0)
+                return; // 没有解密后的数据
+
+            // 5. 使用解密后的数据进行HTTP 处理
+            buf = decryptedBuf; // 将 buf 指向解密后的数据
+            LOG_INFO << "onMessage decryptedBuf is not empty";
+        
         }
         // HttpContext对象用于解析出buf中的请求报文，并把报文的关键信息封装到HttpRequest对象中
         HttpContext *context = boost::any_cast<HttpContext>(conn->getMutableContext());
-        if (!context->parseRequest(buf, receiveTime)) // 解析一个http请求
+        if (context == nullptr)
         {
-            // 如果解析http报文过程中出错
-            conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
+            conn->send("HTTP/1.1 500 Internal Server Error\r\n\r\n");
             conn->shutdown();
+            return;
         }
-        // 如果buf缓冲区中解析出一个完整的数据包才封装响应报文
-        if (context->gotAll())
+        
+        // Support handling multiple complete requests within a single callback.
+        while (buf->readableBytes() > 0)
         {
-            onRequest(conn, context->request());
-            context->reset();
+            if (!context->parseRequest(buf, receiveTime))
+            {
+                conn->send("HTTP/1.1 400 Bad Request\r\n\r\n");
+                conn->shutdown();
+                return;
+            }
+
+            if (context->gotAll())
+            {
+                onRequest(conn, context->request());
+                context->reset();
+                // 继续循环，看 buf 里是否还有下一个请求
+            }
+            else
+            {
+                // 还没凑够一个完整 HTTP 请求
+                break;
+            }
         }
     }
     catch (const std::exception &e)
@@ -158,12 +189,25 @@ void HttpServer::onRequest(const muduo::net::TcpConnectionPtr &conn, const HttpR
     // 打印完整的响应内容用于调试
     LOG_INFO << "Sending response:\n" << buf.toStringPiece().as_string();
 
-    conn->send(&buf);
-    // 如果是短连接的话，返回响应报文后就断开连接
-    if (response.closeConnection())
+    auto piece = buf.toStringPiece();
+    if (useSSL_)
     {
-        conn->shutdown();
+        auto it = sslConns_.find(conn);
+        if (it == sslConns_.end() || !it->second->isHandshakeCompleted())
+        {
+            LOG_WARN << "SSL connection not ready, closing.";
+            conn->shutdown();
+            return;
+        }
+        it->second->send(piece.data(), piece.size());
     }
+    else
+    {
+        conn->send(&buf);
+    }
+    // 如果是短连接的话，返回响应报文后就断开连接
+    if (response.closeConnection())        
+        conn->shutdown();
 }
 
 // 执行请求对应的路由处理函数

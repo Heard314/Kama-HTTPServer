@@ -15,10 +15,16 @@ using namespace http;
 
 GomokuServer::GomokuServer(int port,
                            const std::string &name,
+                           bool useSSL,
                            muduo::net::TcpServer::Option option)
-    : httpServer_(port, name, true, option), maxOnline_(0)
+    : httpServer_(port, name, useSSL, option), maxOnline_(0)
 {
     initialize();
+}
+
+void GomokuServer::setSslConfig(const ssl::SslConfig& config)
+{
+    httpServer_.setSslConfig(config);
 }
 
 void GomokuServer::setThreadNum(int numThreads)

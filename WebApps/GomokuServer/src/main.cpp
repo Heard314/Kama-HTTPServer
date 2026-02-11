@@ -29,9 +29,18 @@ int main(int argc, char* argv[])
         break;
     }
   }
-  
+  bool useSSL = true;
   muduo::Logger::setLogLevel(muduo::Logger::WARN);
-  GomokuServer server(port, serverName);
+  GomokuServer server(port, serverName, useSSL);
+
+  if (useSSL)
+  {
+      ssl::SslConfig cfg;
+      cfg.setCertificateChainFile("/home/yangmf/certs/fullchain.pem");
+      cfg.setPrivateKeyFile("/home/yangmf/certs/privkey.pem");
+      server.setSslConfig(cfg);
+  }
+
   server.setThreadNum(4);
   server.start();
 }
